@@ -1,0 +1,1 @@
+Order for Running is :: ./clean.sh -> python <command in RUNSERVER> -> python <command in RUNCLIENT>
