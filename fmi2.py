@@ -28,7 +28,7 @@ def fmi2Logger(msg, *args):
           
 def fmi2Instantiate(clientFile):
     # Run Client
-    comm = MPI.COMM_SELF.Spawn('xterm', args=['-hold','-e','python',clientFile],maxprocs=1)
+    comm = MPI.COMM_SELF.Spawn('xterm', args=['-hold','-e','python3',clientFile],maxprocs=1)
     
     # As soon a client connects add a dictionary entry for that client with its communicator.     
     clientID = -1

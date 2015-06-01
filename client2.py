@@ -10,7 +10,7 @@ myClientID = 2;
 
 def log(msg, *args):
     if rank == 0:
-        print msg % args
+        print(msg % args)
 
 root = 0
 
