@@ -1,1 +1,4 @@
-Order for Running is :: ./clean.sh -> python <command in RUNSERVER> -> python <command in RUNCLIENT>
+To run either:
+	./run.sh
+    OR
+	mpiexec -n 1 python3 server.py

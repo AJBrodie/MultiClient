@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 from fmi2 import *
-
 from mpi4py import MPI
 import numpy
 import time
@@ -20,6 +19,7 @@ fmi2Logger('')
 
 # Data to be sent
 data = numpy.arange(10, dtype='d')
+mesh = fmi2Mesh()
 
 root = 0
 
@@ -54,10 +54,18 @@ fmi2Logger("Receiving the data from client 2 :: ")
 clientMapp[2].fmi2GetReal(data)
 print(data[1], data[2])
 
+# Receive mesh from Client 1
+fmi2Logger("Receiving mesh from client 1")
+clientMapp[1].fmi2GetMesh(mesh)
+
+# Send mesh to Client 2
+fmi2Logger("Sending mesh to client 2")
+clientMapp[2].fmi2SetMesh(mesh)
+
 ## -------------------------------------------------------------------------
 ## Final cleanup of clients
 
-fmi2Logger('disconnecting clients...')
+fmi2Logger("disconnecting clients...")
 for i in range(0, numClients):
     clientMapp[i+1].fmi2FreeInstance()
 
