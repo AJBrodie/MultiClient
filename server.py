@@ -8,6 +8,7 @@ import time
 ## Personal Packages
 from fmi2 import *
 from vtk import *
+import MeshMatching.RBF
 
 # ---------------------------------------------------------------------------
 # --------------------------------- Body code -------------------------------
@@ -147,6 +148,40 @@ clientMapp[1].fmi2GetMeshData(1,2)
 # Print client 2 mesh data to files
 data2file('serverb_xy_data',clientMapp[1].meshLst[0],clientMapp[1].meshLst[0].dataLst)
 data2file('serverb_xz_data',clientMapp[1].meshLst[1],clientMapp[1].meshLst[1].dataLst)
+
+# -------------------------------  Mesh Matching  ----------------------------#
+fmi2Logger('-----------------------------------------------------------------')
+fmi2Logger('------------------------ Mesh Matching --------------------------')
+fmi2Logger('-----------------------------------------------------------------')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # ------------------------------- Client Cleanup ----------------------------#
 fmi2Logger('-----------------------------------------------------------------')

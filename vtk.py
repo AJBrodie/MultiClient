@@ -6,6 +6,8 @@ Created on Wed Jun 10 09:26:05 2015
 
 Package to define how to write a legacy vtk unstructured mesh file based on an
 input mesh defined as per suggested fmi2 standard
+
+> <
 """
 import numpy
 import os
@@ -114,4 +116,122 @@ def data2file(filename,mesh,datalist):
     fid.close()
     
     
+def readVTK(filename, mesh, dataList):
+    
+    # OPEN FILE
+    fid=open(filename,'r')
+    lineInd = 1
+    # DECLARE VARIABLES
+    pointsSection = 0
+    polygonsSection = 0
+    dataSection = 0
+    pointsCnt = 0
+    dataCnt = 0
+    elemCnt = 0
+    dataSetCnt = 0
+    
+    for line in fid:
+        part = line.split(  )        
+        
+        # CHECK IF IN A SECTION
+        if pointsSection == 1:
+            # Check for first line of Points section
+            if part[0] == 'POINTS':
+                npoints = int(part[1])
+                mesh.numNodes = npoints
+                mesh.nodes = numpy.zeros(npoints*3)
+                pointType = part[2]
+                #break
+            # Otherwise in main part of points section
+            else:
+                pointsInLine = int(len(part) / 3)
+                # For each point in the line there are 3 ordinates to store
+                for i in range(0,pointsInLine):
+                    mesh.nodes[(pointsCnt+i)*3] = float(part[i*3])
+                    mesh.nodes[(pointsCnt+i)*3 + 1] = float(part[i*3 + 1])
+                    mesh.nodes[(pointsCnt+i)*3 + 2] = float(part[i*3 + 2])
+                # Progress points counter by number of points in the line
+                pointsCnt += pointsInLine
+            # If the points counter reaches the number of points, section should end
+            if pointsCnt >= npoints - 1:
+                pointsSection = 0
+            #break
+
+        
+        elif polygonsSection == 1:
+            # Polygon section only has 1 part, no header line
+            # Take number of points in element and store in mesh
+            points = int(part[0])
+            mesh.numNodesPerElem[elemCnt] = points
+            # Read through the point indcies
+            for i in range(1,points):
+                mesh.elems[elemCnt + i - 1] = int(part[i])
+            # Progress number of elements by 1
+            elemCnt += 1
+            # Check if at the end of polygon section
+            if elemCnt >= nPolygons - 1:
+                polygonsSection = 0
+            #break
+        
+        elif dataSection != 0:
+            # Skip blank lines
+            if len(part) != 0:
+                if part[0] == 'FIELD':
+                    dataSets = int(part[2])
+                    dataSection = 2
+                elif dataSection == 2:
+                    dataName = part[0]
+                    dataList[dataSetCnt].name = dataName
+                    dataSize = int(part[1])
+                    dataLength = int(part[2])
+                    dataList[dataSetCnt].values = numpy.zeros(dataLength * dataSize)
+                    dataType = part[3]
+                    dataSection = 3
+                elif dataSection == 3:
+                    lineLength = len(part)
+                    for i in range(0,lineLength):
+                        dataList[dataSetCnt].values[dataCnt] = float(part[i])
+                        dataCnt += 1
+                
+                    if dataCnt >= dataSize*dataLength:
+                        dataSection = 2
+                        dataSetCnt += 1
+                        dataCnt = 0
+                    
+                    if dataSetCnt >= dataSets:
+                        dataSection = 0
+                    #break
+        
+                    
+
+        
+        # SEARCH FOR KEY TERMS
+        # Skip blank lines
+        if len(part) != 0:
+            if part[0] == 'DATASET':
+                if part[1] == 'POLYDATA':
+                    pointsSection = 1
+                    
+                elif part[1] == 'UNSTRUCTURED_GRID':
+                    pointsSection = 1
+                    
+                
+            elif part[0] == 'POLYGONS':
+                nPolygons = int(part[1])
+                mesh.numElems = nPolygons
+                mesh.numNodesPerElem = numpy.zeros(nPolygons)
+                totalIntegers = int(part[2])
+                mesh.elems = numpy.zeros(totalIntegers)
+                polygonsSection = 1
+                
+                
+            elif part[0] == 'POINT_DATA':
+                nPolygons = int(part[1])
+                dataSection = 1
+        
+        print(lineInd)
+        lineInd+=1
             
+
+    fid.close()
+     
