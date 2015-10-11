@@ -1,19 +1,30 @@
 #! /usr/bin/env python
+"""
+File: /MeshMatching/RBF.py
+Author: Andrew Brodie
+Date: 27.07.15
 
-## File: /MeshMatching/RBF.py
-## Author: Andrew Brodie
-## Date: 27.07.15
-##
-## Description
-## Part of MeshMatching packaging, used for defining mesh matching using radial
-## basis function method. Main function is defined as interp with individual 
-## radial basis functions defined as sub classes of the virtual class RBF_func
-##
-## Functions
-## interp
-##
-## 
+Description
+Part of MeshMatching packaging, used for defining mesh matching using radial
+basis function method. Main function is defined as interp with individual 
+radial basis functions defined as sub classes of the virtual class RBF_func,
+these are individually defined in separate files.
+---------------------------------------------------------------------------
+Formulation of this method taken from the paper:
+de Boer A., van Zuijlen A.H., Bijl H., Comparison of conservative and 
+consistent approaches for the coupling of non-mathing meshes, Computational
+Methods of Applied Mechanical Engineering 2008
+---------------------------------------------------------------------------
 
+FUNCTIONS
+interp
+    Function to interpolate at provided values (values are provided in an array)
+
+CLASSES
+RBF_func (abstract)
+    Abstract base class from which all radial basis functions should be derived
+
+"""
 
 ## External Packages
 from abc import ABCMeta
@@ -24,7 +35,7 @@ import numpy
 ## ------------------------ Define the main system ------------------------- ##
 class RBF_system():
     
-    def __init__(self, dim = None, pts = None, vals = None, RBF_fn = None, norm = None):
+    def __init__(self, dim = None, pts = None, vals = None, RBF_fn = None):
     
         # -------------------- SETUP DEFAULT VALUES ------------------------- #
         if dim is None:
@@ -46,60 +57,92 @@ class RBF_system():
             self.RBF_fn = RBF_MQ
         else:
             self.RBF_fn = RBF_fn
-            
-        if norm is None:
-            self.norm = 0
-        else:
-            self.norm = norm
 
         # -------------------------- CALCULATE SYSTEM ----------------------- #
-        # Preallocate matrices
-        RBF = numpy.zeros((len(self.vals),len(self.vals)))
-        y = numpy.zeros(len(self.vals))
-        self.w = numpy.zeros(len(self.vals))
+        # Define sizes
+        nAPts = int(len(self.pts)/self.dim)
         
-        for j in range(0,len(self.pts)-1,self.dim):
-            for i in range(0,len(self.pts)-1,self.dim):
+        # Preallocate matrices
+        phiAA = numpy.zeros((nAPts,nAPts))
+        QA = numpy.zeros((nAPts,self.dim+1))
+        hA = numpy.zeros((nAPts+self.dim+1,nAPts+self.dim+1))
+        rhs = numpy.zeros(nAPts+self.dim+1)
+        self.mappingConstants = numpy.zeros(nAPts+self.dim+1)
+        zeroMatrix = numpy.zeros((self.dim+1,self.dim+1))
+        
+        for j in range(0,nAPts):
+            for i in range(0,nAPts):
                 
                 # Calculate the radius
                 r_coord = numpy.zeros(dim)
                 r = 0
                 for k in range(0,self.dim-1,1):
-                    r_coord[k] = (self.pts[j+k]-self.pts[i+k]) ** 2
+                    r_coord[k] = (self.pts[j*self.dim+k]-self.pts[i*self.dim+k]) ** 2
                 
                 r = numpy.sum(r_coord)
                 r = numpy.sqrt(r)
                     
-                # Build the matrices
-                RBF[j,i] = self.RBF_fn.rbf(r)
+                # Build matrix phiAA
+                phiAA[j,i] = self.RBF_fn.rbf(r)
                 
-            if norm is 1:
-                y[j] = self.vals[j] * numpy.sum(RBF[j,:])
-            else:
-                y[j] = self.vals[j]
+            # Build matrix QA
+            QA[j,0] = 1
+            for k in range(0,self.dim):
+                QA[j,k+1] = self.pts[j+k]
+                
+        # Build RHS matrix
+        rhs = numpy.concatenate((self.vals,numpy.zeros((self.dim+1,1))))
             
+        # ---------------------- COMBINE MATRICES --------------------------- #
+        hAtop = numpy.concatenate((phiAA,QA),1)
+        hAbottom = numpy.concatenate((QA.T,zeroMatrix),1)
+        hA = numpy.concatenate((hAtop,hAbottom),0)
+        
         # ------------------- SOLVE MATRIX SYSTEM --------------------------- #
-        self.w = numpy.linalg.solve(RBF,y)
+        self.mappingConstants = numpy.linalg.solve(hA,rhs)
 
-    def interp(self,pt = None):
-        if pt is None:
+    def interp(self,Bpts = None):
+        if Bpts is None:
             print('Point not defined')
             return 'E1'
+        # ---------------------- Initialise Matrices -------------------------#
+        nBPts = int(len(Bpts)/self.dim)
+        nAPts = int(len(self.pts)/self.dim)
         
-        RBF = numpy.zeros(self.vals)
-        for i in range(0,len(self.pts)-1,self.dim):
-            r_coord = numpy.zeros(self.dim)
-            r = 0
-            for k in range(0,self.dim-1,1):
-                r_coord[k] = (pt[k]-self.pts[i+k]) ** 2
-            
-            r = numpy.sum(r_coord)
-            r = numpy.sqrt(r)
-            
-            RBF[i] = self.RBF_fn.rbf(r)
-            
-            val = numpy.vdot(RBF.transpose(),self.w)
-            
+        phiBA = numpy.zeros((nBPts,nAPts))
+        QB = numpy.zeros((nBPts,self.dim+1))
+        hBA = numpy.zeros((nBPts,nAPts+self.dim+1))
+                
+        
+        # ---------------------- Setup Matrices to interpolate ---------------#    
+        for j in range(0,nBPts):
+            for i in range(0,nAPts):
+                
+                # Calculate the radius
+                r_coord = numpy.zeros(self.dim)
+                r = 0
+                for k in range(0,self.dim-1,1):
+                    r_coord[k] = (Bpts[j*self.dim+k]-self.pts[i*self.dim+k]) ** 2
+                
+                r = numpy.sum(r_coord)
+                r = numpy.sqrt(r)
+                    
+                # Build matrix phiBA
+                phiBA[j,i] = self.RBF_fn.rbf(r)
+                
+            # Build matrix QAB
+            QB[j,0] = 1
+            for k in range(0,self.dim):
+                QB[j,k+1] = Bpts[j+k]        
+        
+        # Combine to form hBA
+        hBA = numpy.concatenate((phiBA,QB),1)
+        
+        # -------------------- CALCULATE THE SYSTEM ------------------------- #
+        val = numpy.dot(hBA,self.mappingConstants)
+        
+
+        # Return value
         return val
 
 ## -------------------------- Define the RBF's ----------------------------- ##
@@ -107,48 +150,5 @@ class RBF_system():
 # Abstract Base Class
 class RBF_func(metaclass = ABCMeta):
     
-    def rbf(self):
+    def rbf(self,r):
         return 0;
-
-# ---------------- Define individual radial basis functions ----------------- #
-
-## Multi quadric basis function
-class RBF_MQ():
-    
-    def __init__(self,scale=None):
-        
-        # Define default values
-        if scale is None:
-            self.scale=1
-            # Scale should be larger than typical separation points but smaller 
-            # than the problem length                                                       ! Look at implementing better default definition
-        else:
-            self.scale=scale
-            
-        # Caclulate the RBF
-    def rbf(self,r):
-        r02 = self.scale**2
-        return math.sqrt(r**2 + r02)
-        
-RBF_func.register(RBF_MQ)
-        
-    
-## Inverse Multi quadric basis function
-class RBF_IMQ():
-    
-    def __init__(self,scale=None):
-        
-        # Define default values
-        if scale is None:
-            self.scale=1
-            # Scale should be larger than typical separation points but smaller 
-            # than the problem length                                                       ! Look at implementing better default definition
-        else:
-            self.scale=scale
-            
-        # Caclulate the RBF
-    def rbf(self,r):
-        r02 = self.scale**2
-        return 1/math.sqrt(r**2 + r02)
-    
-RBF_func.register(RBF_IMQ)
