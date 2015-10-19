@@ -10,12 +10,10 @@ function for use with the RBF meshmatching
 
 """
 ## External Packages
-from abc import ABCMeta
+#from abc import ABCMeta
 import math
 import numpy
 
-## Custom Packages
-from RBF import *
 
 ## Inverse Multi quadric basis function
 class RBF_IMQ():
@@ -35,4 +33,4 @@ class RBF_IMQ():
         r02 = self.scale**2
         return 1/math.sqrt(r**2 + r02)
     
-RBF_func.register(RBF_IMQ)
+#RBF_func.register(RBF_IMQ)

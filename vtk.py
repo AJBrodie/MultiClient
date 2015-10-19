@@ -89,20 +89,20 @@ def data2file(filename,mesh,datalist):
     for i in range(0,len(datalist),1):
         d=datalist[i].values
         
-        if len(d)/mesh.numNodes==1:
+        if len(d)-mesh.numNodes<1e-6:
             if dtype==0:
                 fid.write('SCALARS %s double\n' % datalist[i].name)
-                if i==0: fid.write('LOOKUP_TABLE default\n')
+                fid.write('LOOKUP_TABLE default\n')
                 
                 for j in range(0,mesh.numNodes,1):
                     fid.write('  %f\n' % (d[j] ))
             elif dtype==1:
                 print('Please group scalar data together before vector data for output')
         
-        elif len(d)/mesh.numNodes==2:
+        elif len(d)-2*mesh.numNodes<1e-6:
             print('2D problem with vectors not implemented - ignoring')
             return
-        elif len(d)/mesh.numNodes==3:
+        elif len(d)-3*mesh.numNodes<1e-6:
             fid.write('VECTORS %s double\n' % datalist[i].name)
             if i==0: fid.write('LOOKUP_TABLE default\n')
             
@@ -111,16 +111,23 @@ def data2file(filename,mesh,datalist):
             dtype=1
 
         else:
-            print('Unknown datatype (scalar/vector/etc')
+            print('Unknown datatype (scalar/vector/etc)')
             
     fid.close()
     
     
-def readVTK(filename, mesh, dataList):
+def readVTK(filename, mesh, dataList=None):
     
     # OPEN FILE
     fid=open(filename,'r')
     lineInd = 1
+    
+    if dataList  is None:
+        readData = 0;
+    else:
+        readData = 1;
+            
+    
     # DECLARE VARIABLES
     pointsSection = 0
     polygonsSection = 0
@@ -128,6 +135,7 @@ def readVTK(filename, mesh, dataList):
     pointsCnt = 0
     dataCnt = 0
     elemCnt = 0
+    elemNodesCnt = 0
     dataSetCnt = 0
     
     for line in fid:
@@ -153,7 +161,7 @@ def readVTK(filename, mesh, dataList):
                 # Progress points counter by number of points in the line
                 pointsCnt += pointsInLine
             # If the points counter reaches the number of points, section should end
-            if pointsCnt >= npoints - 1:
+            if pointsCnt >= npoints:
                 pointsSection = 0
             #break
 
@@ -163,13 +171,14 @@ def readVTK(filename, mesh, dataList):
             # Take number of points in element and store in mesh
             points = int(part[0])
             mesh.numNodesPerElem[elemCnt] = points
-            # Read through the point indcies
-            for i in range(1,points):
-                mesh.elems[elemCnt + i - 1] = int(part[i])
+            # Read through the point indicies
+            for i in range(0,points):
+                mesh.elems[elemNodesCnt] = int(part[i+1])
+                elemNodesCnt += 1
             # Progress number of elements by 1
             elemCnt += 1
             # Check if at the end of polygon section
-            if elemCnt >= nPolygons - 1:
+            if elemCnt >= nPolygons:
                 polygonsSection = 0
             #break
         
@@ -221,15 +230,19 @@ def readVTK(filename, mesh, dataList):
                 mesh.numElems = nPolygons
                 mesh.numNodesPerElem = numpy.zeros(nPolygons)
                 totalIntegers = int(part[2])
-                mesh.elems = numpy.zeros(totalIntegers)
+                mesh.elems = numpy.zeros(totalIntegers - nPolygons)
                 polygonsSection = 1
                 
                 
             elif part[0] == 'POINT_DATA':
                 nPolygons = int(part[1])
                 dataSection = 1
+                if readData == 0:
+                    dataSection = 0
+                    print('WARNING: There is data in this file that is not being read in')
+                    
         
-        print(lineInd)
+        #print(lineInd)
         lineInd+=1
             
 

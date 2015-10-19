@@ -15,7 +15,8 @@ sys.path.append("..") # Adds higher directory to python modules path.
 
 from vtk import *
 from fmi2 import *
-from MeshMatching.RBF import *
+import MeshMatching.RBF
+import MeshMatching.RBF_MQ
 
 mesh = fmi2Mesh()
 dataSets=[]
@@ -32,14 +33,14 @@ mesh.dataLst = dataSets
 ## --------------------------------- TEST of RBF --------------------------- ##
 # 
 scale = 0.2         # Scale is larger than point separation, smaller than solution scale
-RBF_fn = RBF_MQ(scale)
+RBF_fn = MeshMatching.RBF_MQ.RBF_MQ(scale)
 
 dim = 3
 pts = mesh.nodes
 vals = mesh.dataLst[0].values
 norm = 0
 
-interpSystem = RBF_system(dim, pts, vals, RBF_fn)
+interpSystem = MeshMatching.RBF.RBF_system(dim, pts, vals, RBF_fn)
 
 interpPoint = numpy.array((-8,0,0))
 

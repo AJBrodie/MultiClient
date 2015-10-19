@@ -20,7 +20,8 @@ import matplotlib.pyplot as plt
 
 from vtk import *
 from fmi2 import *
-from MeshMatching.RBF import *
+import MeshMatching.RBF
+import MeshMatching.RBF_MQ
 
 meshA = fmi2Mesh()
 dataSetsA=[]
@@ -35,33 +36,33 @@ nXA = int(5/0.25 + 1)
 nYA = int(5/0.25 + 1)
 nPtsA = nXA * nYA
 
-ptsA = numpy.zeros((3*nPtsA,1))
-xA = numpy.zeros((nPtsA,1))
-yA = numpy.zeros((nPtsA,1))
+ptsA = numpy.zeros(3*nPtsA)
+xA = numpy.zeros((1,nPtsA))
+yA = numpy.zeros((1,nPtsA))
 cntA = 0
 for i in range(0,nXA):
     for j in range(0,nYA):
-        ptsA[cntA*3,0] = i*0.25
-        xA[cntA,0] = i*0.25
-        ptsA[cntA*3+1,0] = j*0.25
-        yA[cntA,0] = j*0.25
-        ptsA[cntA*3+2,0] = 0
+        ptsA[cntA*3] = i*0.25
+        xA[0,cntA] = i*0.25
+        ptsA[cntA*3+1] = j*0.25
+        yA[0,cntA] = j*0.25
+        ptsA[cntA*3+2] = 0
         cntA = cntA + 1
 
 nXB = int(5/0.2 + 1)
 nYB  = int(5/0.2 + 1)       
 nPtsB = nXB * nYB
-ptsB = numpy.zeros((3*nPtsB,1))
-xB = numpy.zeros((nPtsB,1))
-yB = numpy.zeros((nPtsB,1))
+ptsB = numpy.zeros(3*nPtsB)
+xB = numpy.zeros((1,nPtsB))
+yB = numpy.zeros((1,nPtsB))
 cntB = 0
 for i in range(0,nXB):
     for j in range(0,nYB):
-        ptsB[cntB*3,0] = i*0.2
-        xB[cntB,0] = i*0.2
-        ptsB[cntB*3+1,0] = j*0.2
-        yB[cntB,0] = j*0.2
-        ptsB[cntB*3+2,0] = 0
+        ptsB[cntB*3] = i*0.2
+        xB[0,cntB] = i*0.2
+        ptsB[cntB*3+1] = j*0.2
+        yB[0,cntB] = j*0.2
+        ptsB[cntB*3+2] = 0
         cntB = cntB + 1
         
 ## ------------------------ CALCULATE VALUES ON MATRIX A ------------------- ##        
@@ -81,10 +82,10 @@ plt.show(block=False)
 ## --------------------------------- TEST of RBF --------------------------- ##
 
 scale = 0.3         # Scale is larger than point separation, smaller than solution scale
-RBF_fn = RBF_MQ(scale)
+RBF_fn = MeshMatching.RBF_MQ.RBF_MQ(scale)
 
-dim = 3
-interpSystem = RBF_system(dim, ptsA, valA, RBF_fn)
+dim = 2
+interpSystem = MeshMatching.RBF.RBF_system(dim, ptsA, valA, RBF_fn)
 
 valB = interpSystem.interp(ptsB)
 

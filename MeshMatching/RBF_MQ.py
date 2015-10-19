@@ -11,12 +11,10 @@ use with the RBF meshmatching
 """
 
 ## External Packages
-from abc import ABCMeta
+#from abc import ABCMeta
 import math
 import numpy
 
-## Custom Packages
-from RBF import *
 
 ## Multi quadric basis function
 class RBF_MQ():
@@ -34,6 +32,6 @@ class RBF_MQ():
         # Caclulate the RBF
     def rbf(self,r):
         r02 = self.scale**2
-        return math.sqrt(r**2 + r02)
+        return numpy.sqrt(numpy.power(r,2) + r02)
         
-RBF_func.register(RBF_MQ)
+#RBF_func.register(RBF_MQ)
