@@ -179,10 +179,11 @@ log('Rank is :: %d' % rank)
 log('--------------------------------------------------------------------')
 log('Basic Array Communication')
 log('--------------------------------------------------------------------')
+
 # Syncing communication
-log('----Syncing Communication')
-comm.send(myClientID, dest=0, tag=78)
-comm.recv(source=0, tag=78)
+#log('----Syncing Communication')
+#comm.send(myClientID, dest=0, tag=78)
+#comm.recv(source=0, tag=78)
 
 data = numpy.arange(10, dtype='d')
 
@@ -206,10 +207,11 @@ print(data[1], data[2]);
 log('--------------------------------------------------------------------')
 log('Mesh Communication')
 log('--------------------------------------------------------------------')
+
 # Syncing communication
-log('----Syncing Communication')
-comm.send(myClientID, dest=0, tag=78)
-comm.recv(source=0, tag=78)
+#log('----Syncing Communication')
+#comm.send(myClientID, dest=0, tag=78)
+#comm.recv(source=0, tag=78)
 
 # Send client Meshes
 comm.send(len(meshes)-1, dest=0, tag=myTag)
@@ -229,10 +231,11 @@ for i in range(0,len(meshes)-1,1):
 log('--------------------------------------------------------------------')
 log('Sending mesh data')
 log('--------------------------------------------------------------------')
+
 # Syncing communication
-log('----Syncing Communication')
-comm.send(myClientID, dest=0, tag=78)
-comm.recv(source=0, tag=78)
+#log('----Syncing Communication')
+#comm.send(myClientID, dest=0, tag=78)
+#comm.recv(source=0, tag=78)
 
 # Mesh 1
 meshInd = 0

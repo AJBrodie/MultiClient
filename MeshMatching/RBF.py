@@ -29,12 +29,14 @@ RBF_func (abstract)
 #from abc import ABCMeta
 import math
 import numpy
+from MeshMatching.RBF_MQ import *
+from MeshMatching.RBF_IMQ import *
 
 
 ## ------------------------ Define the main system ------------------------- ##
 class RBF_system():
     
-    def __init__(self, dim = None, pts = None, vals = None, RBF_fn = None):
+    def __init__(self, dim = None, pts = None, vals = None, RBF_fn = None, dimVec = None):
     
         # -------------------- SETUP DEFAULT VALUES ------------------------- #
         # dim is the number of dimensions used in the problem (not stated)
@@ -60,6 +62,12 @@ class RBF_system():
             self.RBF_fn = RBF_MQ
         else:
             self.RBF_fn = RBF_fn
+            
+        if dimVec is None:
+            self.dimVec = [0,1]
+        else:
+            self.dimVec = dimVec
+            
             
         # ------------------------- OTHER VARIABLES ------------------------- #
         # Number of dimensions defined for each point
@@ -105,11 +113,9 @@ class RBF_system():
         '''        
         # Fastest matrix construction 
         pts = numpy.zeros((self.dim,nAPts))
-        pts[0,:] = self.pts[0::self.defineddim]
-        if self.dim > 1:
-            pts[1,:] = self.pts[1::self.defineddim]
-            if self.dim > 2:
-                pts[2,:] = self.pts[2::self.defineddim]
+        for i in range(0,self.dim):
+            pts[i,:] = self.pts[(self.dimVec[i])::self.defineddim]
+
 
         for j in range(0,nAPts):
             rcoord = numpy.zeros((self.dim,nAPts-j-1))
@@ -129,7 +135,7 @@ class RBF_system():
             QA[j,0] = 1
             QA[j,1::] = pts[:,j].T
             
-            print(j)
+            #print(j)
         '''    
         # Functiong but slow - Need to speed up this loop!!!
         for j in range(0,nAPts):
@@ -249,18 +255,13 @@ class RBF_system():
         '''
         # Faster Method
         ptsA = numpy.zeros((self.dim,nAPts))
-        ptsA[0,:] = self.pts[0::self.defineddim]
-        if self.dim > 1:
-            ptsA[1,:] = self.pts[1::self.defineddim]
-            if self.dim > 2:
-                ptsA[2,:] = self.pts[2::self.defineddim]
+        ptsA = numpy.zeros((self.dim,nAPts))
+        for i in range(0,self.dim):
+            ptsA[i,:] = self.pts[(self.dimVec[i])::self.defineddim]
                 
-        ptsB = numpy.zeros((self.dim,nBPts))
-        ptsB[0,:] = Bpts[0::self.defineddim]
-        if self.dim > 1:
-            ptsB[1,:] = Bpts[1::self.defineddim]
-            if self.dim > 2:
-                ptsB[2,:] = Bpts[2::self.defineddim]
+        ptsB = numpy.zeros((self.dim,nAPts))
+        for i in range(0,self.dim):
+            ptsB[i,:] = Bpts[(self.dimVec[i])::self.defineddim]
 
         for j in range(0,nBPts):
             rcoord = numpy.zeros((self.dim,nAPts))

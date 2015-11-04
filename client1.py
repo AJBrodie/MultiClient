@@ -6,7 +6,7 @@ from mpi4py import MPI
 import numpy
 
 ## Personal packages
-from vtk import *
+from SL_io.vtk import *
 from clients import *
 
 # ----------------------- Client Header -------------------------
@@ -180,10 +180,11 @@ log('Rank is :: %d' % rank)
 log('--------------------------------------------------------------------')
 log('Basic Array Communication')
 log('--------------------------------------------------------------------')
+
 # Syncing communication
-log('----Syncing Communication')
-comm.send(myClientID, dest=0, tag=77)
-comm.recv(source=0, tag=77)
+#log('----Syncing Communication')
+#comm.send(myClientID, dest=0, tag=77)
+#comm.recv(source=0, tag=77)
 
 # Receiving the data from Server
 data = numpy.arange(10, dtype='d')
@@ -205,10 +206,11 @@ print(data[1], data[2]);
 log('--------------------------------------------------------------------')
 log('Mesh Communication')
 log('--------------------------------------------------------------------')
+
 # Syncing communication
-log('----Syncing Communication')
-comm.send(myClientID, dest=0, tag=77)
-comm.recv(source=0, tag=77)
+#log('----Syncing Communication')
+#comm.send(myClientID, dest=0, tag=77)
+#comm.recv(source=0, tag=77)
 
 # Send client Meshes (corresponds fmi2GetMesh)
 comm.send(len(meshes)-1, dest=0, tag=myTag)
@@ -228,10 +230,11 @@ for i in range(0,len(meshes)-1,1):
 log('--------------------------------------------------------------------')
 log('Sending mesh data')
 log('--------------------------------------------------------------------')
+
 # Syncing communication
-log('----Syncing Communication')
-comm.send(myClientID, dest=0, tag=77)
-comm.recv(source=0, tag=77)
+#log('----Syncing Communication')
+#comm.send(myClientID, dest=0, tag=77)
+#comm.recv(source=0, tag=77)
 
 # Mesh 1
 meshInd = 0

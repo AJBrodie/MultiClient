@@ -7,7 +7,7 @@ import time
 
 ## Personal Packages
 from fmi2 import *
-from vtk import *
+from SL_io.vtk import *
 import MeshMatching.RBF
 
 # ---------------------------------------------------------------------------
@@ -56,14 +56,14 @@ fmi2Logger('-----------------------------------------------------------------')
 fmi2Logger('---------------------- Basic Communication ----------------------')
 fmi2Logger('-----------------------------------------------------------------')            
 # Syncing client1
-fmi2Logger('Syncing Communication - Client 1')
-a=clientMapp[0].comm.recv(source = 0, tag = 77)
-clientMapp[0].comm.send(a, dest = 0, tag = 77)
+#fmi2Logger('Syncing Communication - Client 1')
+#a=clientMapp[0].comm.recv(source = 0, tag = 77)
+#clientMapp[0].comm.send(a, dest = 0, tag = 77)
 
 # Syncing client2
-fmi2Logger('Syncing Communication - Client 2')
-a=clientMapp[1].comm.recv(source = 0, tag = 78)
-clientMapp[1].comm.send(a, dest = 0, tag = 78)
+#fmi2Logger('Syncing Communication - Client 2')
+#a=clientMapp[1].comm.recv(source = 0, tag = 78)
+#clientMapp[1].comm.send(a, dest = 0, tag = 78)
 
 # Sending data to Client 1
 fmi2Logger("Sending the data to client 1 :: ")
@@ -95,9 +95,9 @@ fmi2Logger('------------------ Receive Mesh 1 + Meshdata1 -------------------')
 fmi2Logger('-----------------------------------------------------------------')
             
 # Syncing client1
-fmi2Logger('Syncing Communication - Client 1')
-a=clientMapp[0].comm.recv(source = 0, tag = 77)
-clientMapp[0].comm.send(a, dest = 0, tag = 77)
+#fmi2Logger('Syncing Communication - Client 1')
+#a=clientMapp[0].comm.recv(source = 0, tag = 77)
+#clientMapp[0].comm.send(a, dest = 0, tag = 77)
 
 # Receive meshes from Client 1
 fmi2Logger("Receiving meshes from client 1")
@@ -108,9 +108,9 @@ clientMapp[0].fmi2GetMesh()
 
            
 # Syncing client1
-fmi2Logger('Syncing Communication - Client 1')
-a=clientMapp[0].comm.recv(source = 0, tag = 77)
-clientMapp[0].comm.send(a, dest = 0, tag = 77)
+#fmi2Logger('Syncing Communication - Client 1')
+#a=clientMapp[0].comm.recv(source = 0, tag = 77)
+#clientMapp[0].comm.send(a, dest = 0, tag = 77)
 
 # Receive data on meshes from Client 1
 clientMapp[0].fmi2GetMeshData(0,2)
@@ -125,9 +125,9 @@ fmi2Logger('------------------ Receive Mesh 2 + Meshdata2 -------------------')
 fmi2Logger('-----------------------------------------------------------------')
             
 # Syncing client2
-fmi2Logger('Syncing Communication - Client 2')
-a=clientMapp[1].comm.recv(source = 0, tag = 78)
-clientMapp[1].comm.send(a, dest = 0, tag = 78)
+#fmi2Logger('Syncing Communication - Client 2')
+#a=clientMapp[1].comm.recv(source = 0, tag = 78)
+#clientMapp[1].comm.send(a, dest = 0, tag = 78)
 
 # Receive meshes from Client 2
 fmi2Logger("Receiving mesh from client 2")
@@ -138,9 +138,9 @@ clientMapp[1].fmi2GetMesh()
        
 
 # Syncing client2
-fmi2Logger('Syncing Communication - Client 2')
-a=clientMapp[1].comm.recv(source = 0, tag = 78)
-clientMapp[1].comm.send(a, dest = 0, tag = 78)
+#fmi2Logger('Syncing Communication - Client 2')
+#a=clientMapp[1].comm.recv(source = 0, tag = 78)
+#clientMapp[1].comm.send(a, dest = 0, tag = 78)
 
 # Receive data on client 2 meshes
 clientMapp[1].fmi2GetMeshData(0,2)
