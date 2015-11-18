@@ -15,76 +15,15 @@ import numpy
 ## Personal packages
 from SL_io.vtk import *
 
-# --------------------- Variable Types --------------------------
-class fmi2MeshData:
-    def __init__(self,name=None,values=None):
-        if name is None:
-            self.name = ''
-        else:
-            self.name = name
-            
-        if values is None:
-            self.values = numpy.zeros(1)
-        else:
-            self.values=values
-
-class fmi2Mesh:
-    def __init__(self,name=None,numNodes=None,numElems=None,nodes=None,
-                 nodeIDs=None,numNodesPerElem=None,elems=None,dataLst=None):
-        #string
-        if name is None:
-            self.name=''
-        else:
-            self.name=name
-        
-        # Int
-        if numNodes is None:
-            self.numNodes=0
-        else:
-            self.numNodes=numNodes
-        if numElems is None:
-            self.numElems=0
-        else:
-            self.numElems=numElems
-            
-        #Array 3n
-        if nodes is None:
-            self.nodes = numpy.zeros(1)
-        else:
-            self.nodes=nodes
-            
-        #Array n
-        if nodeIDs is None:
-            nodeIDs = numpy.zeros(1)
-        else:
-            nodeIDs = nodeIDs
-            
-        #Array ne
-        if numNodesPerElem is None:
-            self.numNodesPerElem = numpy.zeros(1)
-        else:
-            self.numNodesPerElem=numNodesPerElem
-
-        # Array unknown size (array containing node IDs)
-        if elems is None:
-            self.elems = numpy.zeros(1)
-        else:
-            self.elems=elems
-
-        # Array for storing mesh data
-        if dataLst is None:
-            self.dataLst = []
-        else:
-            self.dataLst=dataLst
-            
-# ---------------------- Define Model Variables -----------------
+           
+# ---------------------- Create Variable Structure -----------------
 '''
-This section replaces the use of other xml file to define
-variables or whatever other alternative method is deemed suitable
-for defining the mesh.
+This section could be used to further replace the use of the xml file to define
+variables or whatever other alternative method is deemed suitable for defining 
+the mesh.
 
 ModelExchange = None
-CoSimulation.SourceFiles=['./FMU1.py']
+CoSimulation.SourceFiles=['./FMU2.py']
 
 UnitDefinitions=[]
 # infinite list of fmi2Unit
@@ -99,7 +38,8 @@ DefaultExperiment = None
 
 VendorAnnotations = []
 # list of type fmi2Annotation
-
+'''
+'''
 ModelVariables.ScalarVariable = []
 # list of fmi2ScalarVariable
 class fmi2ScalarVariable:
@@ -181,6 +121,18 @@ ModelVariables.VectorVariable = []
 ModelVariables.CombinedVariable = []
 # list of fmi2CombinedVariable
 '''
+class ModelVariables():
+    def __init__(self):
+        self.ScalarVariable = ScalarVariable()
+        self.CombinedVariable = CombinedVariable()
+
+class experiment():
+    def __init__(self):
+        self.startTime = 0
+        self.stopTime = 0
+        self.dt = 0
+        self.tolerance = 0
+        
 class ScalarVariable():
     def __init__(self):
         self.Real = []
@@ -193,26 +145,77 @@ class RealScalarVariable():
 class CombinedVariable():
     def __init__(self):
         self.meshes = []
-    
-class ModelVariables():
-    def __init__(self):
-        self.ScalarVariable = ScalarVariable()
-        self.CombinedVariable = CombinedVariable()
+
+
+class fmi2MeshData:
+    def __init__(self,name=None,values=None):
+        if name is None:
+            self.name = ''
+        else:
+            self.name = name
+            
+        if values is None:
+            self.values = numpy.zeros(1)
+        else:
+            self.values=values
+
+class fmi2Mesh:
+    def __init__(self,name=None,numNodes=None,numElems=None,nodes=None,
+                 nodeIDs=None,numNodesPerElem=None,elems=None,dataLst=None):
+        #string
+        if name is None:
+            self.name=''
+        else:
+            self.name=name
         
-class experiment():
-    def __init__(self):
-        self.startTime = 0
-        self.stopTime = 0
-        self.dt = 0
-        self.tolerance = 0
-        
+        # Int
+        if numNodes is None:
+            self.numNodes=0
+        else:
+            self.numNodes=numNodes
+        if numElems is None:
+            self.numElems=0
+        else:
+            self.numElems=numElems
+            
+        #Array 3n
+        if nodes is None:
+            self.nodes = numpy.zeros(1)
+        else:
+            self.nodes=nodes
+            
+        #Array n
+        if nodeIDs is None:
+            nodeIDs = numpy.zeros(1)
+        else:
+            nodeIDs = nodeIDs
+            
+        #Array ne
+        if numNodesPerElem is None:
+            self.numNodesPerElem = numpy.zeros(1)
+        else:
+            self.numNodesPerElem=numNodesPerElem
+
+        # Array unknown size (array containing node IDs)
+        if elems is None:
+            self.elems = numpy.zeros(1)
+        else:
+            self.elems=elems
+
+        # Array for storing mesh data
+        if dataLst is None:
+            self.dataLst = []
+        else:
+            self.dataLst=dataLst        
+
+## ------------------------- Define the Model Variables -------------------- ##
 
 ModelVariables = ModelVariables()
 experiment = experiment()
 
 # list of fmi2ScalarVariable
-#ModelVariables.ScalarVariable.Real = []
 ModelVariables.ScalarVariable.Real.append(RealScalarVariable())
+
 # Real - ScalarVariable with index 0 is time
 ModelVariables.ScalarVariable.Real[0].__name = 'time'
 ModelVariables.ScalarVariable.Real[0] = 0
@@ -261,8 +264,6 @@ temp1data = temp1data.reshape(len(temp1data),1)
 temp1=fmi2MeshData('temperature',temp1data)
 
 data1=[temp1,disp1]
-# Write mesh to file
-#mesh2file('clientb_xy',meshes[0])
 
 ## Second Mesh Definition
 name='Mesh05'
@@ -285,7 +286,6 @@ nodes = numpy.array([
         2,0,0.75,
         2,0,1
        ])
-#nodes = nodes.reshape(len(nodes),1)
 nodeIDs = numpy.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14])
 numNodesPerElem = numpy.array([3,3,3,3,3,3,3,3,4,4,4,4])
 elems = numpy.array([
@@ -333,9 +333,6 @@ temp2 = fmi2MeshData('temperature',temp2data)
 data2=[temp2,disp2]
 meshes[0].dataLst = data1
 meshes[1].dataLst = data2
-
-#mesh2file('clientb_xz',meshes[1])
-#data2file('clientb_xz_data',meshes[1],data2)
 
 ModelVariables.CombinedVariable.meshes = meshes
 meshes = None

@@ -64,7 +64,10 @@ class RBF_system():
             self.RBF_fn = RBF_fn
             
         if dimVec is None:
-            self.dimVec = [0,1]
+            if self.dim is 2:
+                self.dimVec = [0,1]
+            elif self.dim is 3:
+                self.dimVec = [0,1,2]
         else:
             self.dimVec = dimVec
             
@@ -259,7 +262,7 @@ class RBF_system():
         for i in range(0,self.dim):
             ptsA[i,:] = self.pts[(self.dimVec[i])::self.defineddim]
                 
-        ptsB = numpy.zeros((self.dim,nAPts))
+        ptsB = numpy.zeros((self.dim,nBPts))
         for i in range(0,self.dim):
             ptsB[i,:] = Bpts[(self.dimVec[i])::self.defineddim]
 

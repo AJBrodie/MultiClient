@@ -188,6 +188,12 @@ def readVTK(filename, mesh, dataList=None):
                 if part[0] == 'FIELD':
                     dataSets = int(part[2])
                     dataSection = 2
+                elif part[0] == 'LOOKUP_TABLE':
+                    dataSets = len(dataList)
+                    dataSize = int(1)
+                    dataLength = nPoints
+                    dataList[dataSetCnt].values = numpy.zeros(dataLength * dataSize)                    
+                    dataSection = 3
                 elif dataSection == 2:
                     dataName = part[0]
                     dataList[dataSetCnt].name = dataName
@@ -203,7 +209,7 @@ def readVTK(filename, mesh, dataList=None):
                         dataCnt += 1
                 
                     if dataCnt >= dataSize*dataLength:
-                        dataSection = 2
+                        dataSection = 1
                         dataSetCnt += 1
                         dataCnt = 0
                     
@@ -233,9 +239,17 @@ def readVTK(filename, mesh, dataList=None):
                 mesh.elems = numpy.zeros(totalIntegers - nPolygons)
                 polygonsSection = 1
                 
+            elif part[0] == 'CELLS':
+                nPolygons = int(part[1])
+                mesh.numElems = nPolygons
+                mesh.numNodesPerElem = numpy.zeros(nPolygons)
+                totalIntegers = int(part[2])
+                mesh.elems = numpy.zeros(totalIntegers - nPolygons)
+                polygonsSection = 1
+                
                 
             elif part[0] == 'POINT_DATA':
-                nPolygons = int(part[1])
+                nPoints = int(part[1])
                 dataSection = 1
                 if readData == 0:
                     dataSection = 0

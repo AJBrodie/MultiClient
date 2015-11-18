@@ -63,7 +63,7 @@ for i in range(0,meshFine.numNodes):
     y = meshFine.nodes[i*3+1]
     z = meshFine.nodes[i*3+2]
     
-    meshFine.dataLst[0].values[i,0]=numpy.sin(3*(numpy.sin(5*(x**2)) + z**2 - numpy.sin(2*(z**2))))
+    meshFine.dataLst[0].values[i,0]=numpy.sin(3*(numpy.sin(5*(x**2)) + z**2 - numpy.sin(2*(z**2))))+10
 
 
 ## ------------------------ MAP DATA TO COARSE MESH ------------------------ ## 
@@ -90,7 +90,7 @@ for i in range(0,meshCoarse.numNodes):
     y = meshCoarse.nodes[i*3+1]
     z = meshCoarse.nodes[i*3+2]
     
-    meshCoarse.dataLst[1].values[i,0]=numpy.sin(3*(numpy.sin(5*(x**2)) + z**2 - numpy.sin(2*(z**2))))
+    meshCoarse.dataLst[1].values[i,0]=numpy.sin(3*(numpy.sin(5*(x**2)) + z**2 - numpy.sin(2*(z**2))))+10
     
 ## ----------- CALCULATE DIFFERENCE BETWEEN PLOTTED AND INTERP ------------- ##
 meshCoarse.dataLst[2].values = meshCoarse.dataLst[1].values-meshCoarse.dataLst[0].values
@@ -100,5 +100,5 @@ meshCoarse.dataLst[3].values = abs(numpy.divide(meshCoarse.dataLst[2].values,mes
 
 ## ------------------------ OUTPUT TO VTK FILE ----------------------------- ##
 print('Outputing meshes and values to files')
-data2file('CoarseMesh(interp)_scale',meshCoarse,meshCoarse.dataLst)
-data2file('FineMesh(Orig)_scale',meshFine,meshFine.dataLst)
+data2file('CoarseMesh(interp)_scaleRBF4',meshCoarse,meshCoarse.dataLst)
+data2file('FineMesh(Orig)_scaleRBF4',meshFine,meshFine.dataLst)
