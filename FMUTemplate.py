@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 28 16:58:53 2015
 
-@author: andrew
+File: FMUTemplate.py
+Author: Andrew Brodie
+Created: 30.10.2015
+
+Description:
+Defines the FMI API functions that need to be defined for an FMU.
+
+
 """
 
 # ------------------------ Include Packages --------------------
@@ -13,91 +19,8 @@ import numpy
 from vtk import *
 from clients import *
 
-import FMU1Variables
 
-# ----------------------- Client Header -------------------------
-class fmi2MeshData:
-    def __init__(self,name=None,values=None):
-        if name is None:
-            self.name = ''
-        else:
-            self.name = name
-            
-        if values is None:
-            self.values = numpy.zeros(1)
-        else:
-            self.values=values
-
-class fmi2Mesh:
-    def __init__(self,name=None,numNodes=None,numElems=None,nodes=None,
-                 nodeIDs=None,numNodesPerElem=None,elems=None,dataLst=None):
-        #string
-        if name is None:
-            self.name=''
-        else:
-            self.name=name
-        
-        # Int
-        if numNodes is None:
-            self.numNodes=0
-        else:
-            self.numNodes=numNodes
-        if numElems is None:
-            self.numElems=0
-        else:
-            self.numElems=numElems
-            
-        #Array 3n
-        if nodes is None:
-            self.nodes = numpy.zeros(1)
-        else:
-            self.nodes=nodes
-            
-        #Array n
-        if nodeIDs is None:
-            nodeIDs = numpy.zeros(1)
-        else:
-            nodeIDs = nodeIDs
-            
-        #Array ne
-        if numNodesPerElem is None:
-            self.numNodesPerElem = numpy.zeros(1)
-        else:
-            self.numNodesPerElem=numNodesPerElem
-
-        # Array unknown size (array containing node IDs)
-        if elems is None:
-            self.elems = numpy.zeros(1)
-        else:
-            self.elems=elems
-
-        # Array for storing mesh data
-        if dataLst is None:
-            self.dataLst = []
-        else:
-            self.dataLst=dataLst
-
-class fmi2Model():
-    
-    def fmi2Logger(msg, *args):
-        print(msg % args)
-            
-    def fmi2GetMesh(mesh):
-    
-    def fmi2SetMesh(mesh):
-        
-    def fmi2GetMeshData():
-        
-    def fmi2SetMeshData():
-        
-    def fmi2GetReal():
-        
-    def fmi2SetReal():
-        
-    def fmi2DoStep():
-        
-    def fmi2:
-        
+      
 # -------------------- Creation, Destruction and Logging of FMUs --------------
         
 class fmi2Component():
@@ -131,32 +54,6 @@ def fmi2Instantiate():
     - loggingOn if true debug logging is enabled
     '''
     
-class fmi2CallbackFunctions():
-    '''
-    Class to define all callbackFunctions, not accurate according to standard
-    should be a structure of pointers to functions and the componentEnvironment.
-    '''
-    def logger(componentEnvironment, instanceName, status, category, message, ...):
-        '''
-        Should be some pointer to a function that can be called in the FMU
-        '''
-    def allocateMemory:
-        '''
-        Pointer to a function that FMU can use to allocate memory, if in XML
-        canNotUseMemoryManagementFunctions = true, a void pointer can be provided
-        '''
-        
-    def freeMemory:
-        '''
-        Pointer to a function that FMU can use to free memory, if in XML
-        canNotUseMemoryManagementFunctions = true, a void pointer can be provided
-        '''        
-                
-    def stepFinished:
-        '''
-        Optional callback function to signal computation of communication step
-        of a co-sim slave is finished
-        '''
 
 def fmi2FreeInstance(fmi2Component c):
     '''

@@ -1,4 +1,15 @@
 # -*- coding: utf-8 -*-
+'''
+File: ControlScript.py
+Author: Andrew Brodie
+Created: 30.10.2015
+
+Description:
+Defines the interaction between the FMUs.
+
+Loads FMU1 and FMU2, sets up the simulation then utilises RBF mapping to map 
+data between the meshes in FMU
+'''
 
 # Add current directory to library path
 import os, sys, numpy
@@ -8,6 +19,7 @@ sys.path.append(os.getcwd())
 #import MeshMatching as MM
 from MeshMatching import RBF_MQ as RBFfunc
 from MeshMatching import RBF
+from FMUClasses import *
 import SL_io.vtk as SLio
 
 
@@ -21,15 +33,13 @@ nTSteps = 10
 tInit = 0
 tFin = nTSteps * dt + tInit
 
-
 fmi2True = 'fmi2True'
 fmi2False = 'fmi2False'
 
 fmu1Component = FMU1.fmi2Instantiate()
-# INPUT DATA NOT DEFINED PROPERLY FOR FMU2
 fmu2Component = FMU2.fmi2Instantiate()
 
-# Prepare FMU1
+## ------------------------------ Prepare FMU1 ----------------------------- ##
 status = FMU1.fmi2SetupExperiment(fmu1Component, fmi2False, 0, tInit, fmi2True, tFin)
 
 status = FMU1.fmi2EnterInitializationMode(fmu1Component)
@@ -39,20 +49,24 @@ All variables that need to be initialised for model should be initialised
 - Implement only mesh data initial values here?
 '''
 vr=[]
-vr.append([])
+vr.append(fmi2Mesh())
+vr.append(fmi2Mesh())
 CS_fmu1Meshes = []
-#fmu1Meshes.append([])
-var = []
-var.append('meshes')
-nvr = 1
+CS_fmu1Meshes.append(fmi2Mesh())
+CS_fmu1Meshes.append(fmi2Mesh())
 
-status = FMU1.fmi2GetMeshes(fmu1Component,var,nvr,vr)
-CS_fmu1Meshes = vr[0]
+var = []
+var.append('Boundary01')
+var.append('Boundary02')
+nvr = 2
+
+status = FMU1.fmi2GetMesh(fmu1Component,var,nvr,vr)
+CS_fmu1Meshes = vr
 vr = None
 var = None
 status = FMU1.fmi2ExitInitializationMode(fmu1Component)
 
-# Prepare FMU2
+## ------------------------------ Prepare FMU2 ----------------------------- ##
 status = FMU2.fmi2SetupExperiment(fmu2Component, fmi2False, 0, tInit, fmi2True, tFin)
 
 status = FMU2.fmi2EnterInitializationMode(fmu2Component)
@@ -62,21 +76,24 @@ All variables that need to be initialised for model should be initialised
 - Implement only mesh data initial values here?
 '''
 vr=[]
-vr.append([])
+vr.append(fmi2Mesh())
+vr.append(fmi2Mesh())
 CS_fmu2Meshes = []
-#fmu2Meshes.append([])
+CS_fmu2Meshes.append(fmi2Mesh())
+CS_fmu2Meshes.append(fmi2Mesh())
 
 var = []
-var.append('meshes')
-nvr = 1
+var.append('Boundary01')
+var.append('Boundary02')
+nvr = 2
 
-status = FMU2.fmi2GetMeshes(fmu2Component,var,nvr,vr)
-CS_fmu2Meshes = vr[0]
+status = FMU2.fmi2GetMesh(fmu2Component,var,nvr,vr)
+CS_fmu2Meshes = vr
 vr = None
 var = None
 status = FMU2.fmi2ExitInitializationMode(fmu2Component)
 
-# --------------------------- Output Initial Values ---------------------------
+## -------------------------- Output Initial Values ------------------------ ##
 filename1M1Base ='fmu1_M1'
 filename1M2Base ='fmu1_M2'
 filename2M1Base ='fmu2_M1'
@@ -95,7 +112,7 @@ SLio.data2file(filename2M1,CS_fmu2Meshes[0],CS_fmu2Meshes[0].dataLst)
 SLio.data2file(filename2M2,CS_fmu2Meshes[1],CS_fmu2Meshes[1].dataLst)
 
 
-# Start time loop
+## ------------------------------ Start time loop -------------------------- ##
 for tStep in range(0,nTSteps):
     
     tCount +=1
@@ -107,7 +124,7 @@ for tStep in range(0,nTSteps):
     
     # ------------------------ Get New Data from FMU1 -------------------------
     var = []
-    var.append('temperature')
+    var.append('pressure')
     var.append('displacement')
     nvr = 2
     
@@ -128,18 +145,29 @@ for tStep in range(0,nTSteps):
     vr = None    
     
     # ---------------------------- Map FMU1 data to Mesh 2 --------------------
-    # Apply mesh matching
+    # Apply data mapping
     scale = 0.1
     rbf = RBFfunc.RBF_MQ(scale) 
     MMfmu1_mesh1_data1 = RBF.RBF_system(2,CS_fmu1Meshes[0].nodes,CS_fmu1Meshes[0].dataLst[0].values,rbf)
-    #MMfmu1_mesh1_data2 = RBF.RBF_system(2,CS_fmu1Meshes[0].nodes,CS_fmu1Meshes[0].dataLst[1].values,rbf)
-    MMfmu1_mesh2_data1 = RBF.RBF_system(2,CS_fmu1Meshes[1].nodes,CS_fmu1Meshes[1].dataLst[0].values,rbf,[0,2])
-    #MMfmu1_mesh2_data2 = RBF.RBF_system(2,CS_fmu1Meshes[1].nodes,CS_fmu1Meshes[1].dataLst[1].values,rbf,[0,2])
+    MMfmu1_mesh1_data2_1 = RBF.RBF_system(2,CS_fmu1Meshes[0].nodes,CS_fmu1Meshes[0].dataLst[1].values[0::3],rbf)
+    MMfmu1_mesh1_data2_2 = RBF.RBF_system(2,CS_fmu1Meshes[0].nodes,CS_fmu1Meshes[0].dataLst[1].values[1::3],rbf)
+    MMfmu1_mesh1_data2_3 = RBF.RBF_system(2,CS_fmu1Meshes[0].nodes,CS_fmu1Meshes[0].dataLst[1].values[2::3],rbf)
     
-    CS_fmu2Meshes[0].dataLst[0].values = MMfmu1_mesh1_data1.interp(CS_fmu2Meshes[0].nodes)     # Changes first data set of fmu2Component to numpy array
-    #CS_fmu2Meshes[0].dataLst[1] = MMfmu1_mesh1_data2.interp(CS_fmu2Meshes[0].nodes)
+    MMfmu1_mesh2_data1 = RBF.RBF_system(2,CS_fmu1Meshes[1].nodes,CS_fmu1Meshes[1].dataLst[0].values,rbf,[0,2])
+    MMfmu1_mesh2_data2_1 = RBF.RBF_system(2,CS_fmu1Meshes[1].nodes,CS_fmu1Meshes[1].dataLst[1].values[0::3],rbf,[0,2])
+    MMfmu1_mesh2_data2_2 = RBF.RBF_system(2,CS_fmu1Meshes[1].nodes,CS_fmu1Meshes[1].dataLst[1].values[1::3],rbf,[0,2])
+    MMfmu1_mesh2_data2_3 = RBF.RBF_system(2,CS_fmu1Meshes[1].nodes,CS_fmu1Meshes[1].dataLst[1].values[2::3],rbf,[0,2])
+    
+    
+    CS_fmu2Meshes[0].dataLst[0].values = MMfmu1_mesh1_data1.interp(CS_fmu2Meshes[0].nodes)
+    CS_fmu2Meshes[0].dataLst[1].values[0::3] = MMfmu1_mesh1_data2_1.interp(CS_fmu2Meshes[0].nodes)
+    CS_fmu2Meshes[0].dataLst[1].values[1::3] = MMfmu1_mesh1_data2_2.interp(CS_fmu2Meshes[0].nodes)
+    CS_fmu2Meshes[0].dataLst[1].values[2::3] = MMfmu1_mesh1_data2_3.interp(CS_fmu2Meshes[0].nodes)
+    
     CS_fmu2Meshes[1].dataLst[0].values = MMfmu1_mesh2_data1.interp(CS_fmu2Meshes[1].nodes)
-    #CS_fmu2Meshes[1].dataLst[1] = MMfmu1_mesh2_data2.interp(CS_fmu2Meshes[1].nodes)
+    CS_fmu2Meshes[1].dataLst[1].values[0::3] = MMfmu1_mesh2_data2_1.interp(CS_fmu2Meshes[1].nodes)
+    CS_fmu2Meshes[1].dataLst[1].values[1::3] = MMfmu1_mesh2_data2_2.interp(CS_fmu2Meshes[1].nodes)
+    CS_fmu2Meshes[1].dataLst[1].values[2::3] = MMfmu1_mesh2_data2_3.interp(CS_fmu2Meshes[1].nodes)
     
     # ---------------------------- Set FMU2 Mesh Data -------------------------
     vr=[]
@@ -180,14 +208,25 @@ for tStep in range(0,nTSteps):
     scale = 0.1
     rbf = RBFfunc.RBF_MQ(scale) 
     MMfmu2_mesh1_data1 = RBF.RBF_system(2,CS_fmu2Meshes[0].nodes,CS_fmu2Meshes[0].dataLst[0].values,rbf)
-    #MMfmu2_mesh1_data2 = RBF.RBF_system(2,CS_fmu2Meshes[0].nodes,CS_fmu2Meshes[0].dataLst[1].values,rbf)
+    MMfmu2_mesh1_data2_1 = RBF.RBF_system(2,CS_fmu2Meshes[0].nodes,CS_fmu2Meshes[0].dataLst[1].values[0::3],rbf)
+    MMfmu2_mesh1_data2_2 = RBF.RBF_system(2,CS_fmu2Meshes[0].nodes,CS_fmu2Meshes[0].dataLst[1].values[1::3],rbf)
+    MMfmu2_mesh1_data2_3 = RBF.RBF_system(2,CS_fmu2Meshes[0].nodes,CS_fmu2Meshes[0].dataLst[1].values[2::3],rbf)
+    
     MMfmu2_mesh2_data1 = RBF.RBF_system(2,CS_fmu2Meshes[1].nodes,CS_fmu2Meshes[1].dataLst[0].values,rbf,[0,2])
-    #MMfmu2_mesh2_data2 = RBF.RBF_system(2,CS_fmu2Meshes[1].nodes,CS_fmu2Meshes[1].dataLst[1].values,rbf,[0,2])
+    MMfmu2_mesh2_data2_1 = RBF.RBF_system(2,CS_fmu2Meshes[1].nodes,CS_fmu2Meshes[1].dataLst[1].values[0::3],rbf,[0,2])
+    MMfmu2_mesh2_data2_2 = RBF.RBF_system(2,CS_fmu2Meshes[1].nodes,CS_fmu2Meshes[1].dataLst[1].values[1::3],rbf,[0,2])
+    MMfmu2_mesh2_data2_3 = RBF.RBF_system(2,CS_fmu2Meshes[1].nodes,CS_fmu2Meshes[1].dataLst[1].values[2::3],rbf,[0,2])
+    
     
     CS_fmu1Meshes[0].dataLst[0].values = MMfmu2_mesh1_data1.interp(CS_fmu1Meshes[0].nodes)
-    #CS_fmu1Meshes[0].dataLst[1] = MMfmu2_mesh1_data2.interp(CS_fmu1Meshes[0].nodes)
+    CS_fmu1Meshes[0].dataLst[1].values[0::3] = MMfmu2_mesh1_data2_1.interp(CS_fmu1Meshes[0].nodes)
+    CS_fmu1Meshes[0].dataLst[1].values[1::3] = MMfmu2_mesh1_data2_2.interp(CS_fmu1Meshes[0].nodes)
+    CS_fmu1Meshes[0].dataLst[1].values[2::3] = MMfmu2_mesh1_data2_3.interp(CS_fmu1Meshes[0].nodes)
+    
     CS_fmu1Meshes[1].dataLst[0].values = MMfmu2_mesh2_data1.interp(CS_fmu1Meshes[1].nodes)
-    #CS_fmu1Meshes[1].dataLst[1] = MMfmu2_mesh2_data2.interp(CS_fmu1Meshes[1].nodes)
+    CS_fmu1Meshes[1].dataLst[1].values[0::3] = MMfmu2_mesh2_data2_1.interp(CS_fmu1Meshes[1].nodes)
+    CS_fmu1Meshes[1].dataLst[1].values[1::3] = MMfmu2_mesh2_data2_2.interp(CS_fmu1Meshes[1].nodes)
+    CS_fmu1Meshes[1].dataLst[1].values[2::3] = MMfmu2_mesh2_data2_3.interp(CS_fmu1Meshes[1].nodes)
     
     
     # ---------------------------- Set FMU1 Mesh Data -------------------------

@@ -11,116 +11,8 @@ File to describe the variables present in the model.
 # ------------------------ Include Packages --------------------
 ## External Packages
 import numpy
-
-## Personal packages
-from SL_io.vtk import *
-
            
 # ---------------------- Create Variable Structure -----------------
-'''
-This section replaces the use of other xml file to define
-variables or whatever other alternative method is deemed suitable
-for defining the mesh.
-
-ModelExchange = None
-CoSimulation.SourceFiles=['./FMU1.py']
-
-UnitDefinitions=[]
-# infinite list of fmi2Unit
-
-TypeDefinitions=[]
-# infinite list of fmi2SimpleType
-
-LogCategories=[]
-# infinite list of Category
-
-DefaultExperiment = None
-
-VendorAnnotations = []
-# list of type fmi2Annotation
-'''
-'''
-ModelVariables.ScalarVariable = []
-# list of fmi2ScalarVariable
-class fmi2ScalarVariable:
-    
-    Class for describing scalar variables, see initialiser for allowed values
-    
-    def __init__(name=None, valueReference=None, description=None, causality=None, variability=None, initial=None, canHandleMultipleSetPerTimeInstant=None,fmi2Type=None,annotations=None):
-        
-        if name is None:
-            self.name = 'NA'
-        else:
-            self.name = name
-            
-        if valueReference is None:
-            self.valueReference = 0
-        else:
-            self.valueReference = valueReference
-            
-        if description is None:
-            self.description = ''
-        else:
-            self.description = description
-        
-        if causality is None:
-            
-            Valid values:
-            - parameter
-            - calculatedParameter
-            - input/output
-            - local
-            - independent
-            
-            self.causality = ''
-        else:
-            self.causality = causality
-        
-        if variability is None:
-            self.variability = ''
-            
-            Valid values:
-            - constant
-            - fixed
-            - tunable
-            - discrete
-            - continuous
-            
-        else:
-            self.variability = variability
-            
-        if initial is None:
-            self.initial = ''
-            
-            Valid values:
-            - exact
-            - approx
-            - calculated
-            
-        else:
-            self.initial = initial
-            
-        if canHandleMultipleSetPerTimeInstant is None:
-            self.canHandleMultipleSetPerTimeInstant = fmi2False
-        else:
-            self.canHandleMultipleSetPerTimeInstant = canHandleMultipleSetPerTimeInstant
-            
-        if fmi2Type is None:
-            self.fmi2Type = ''
-        else:
-            self.fmi2Type = fmi2Type
-            
-        if annotations is None:
-            self.annotations = []
-        else:
-            self.annotations = annotations
-
-ModelVariables.VectorVariable = []
-# list of fmi2VectorVariable
-
-ModelVariables.CombinedVariable = []
-# list of fmi2CombinedVariable
-'''
 class ModelVariables():
     def __init__(self):
         self.ScalarVariable = ScalarVariable()
@@ -228,7 +120,7 @@ for i in range(0,nMeshes):
     meshes.append(fmi2Mesh())
 
 ## First Mesh Definition
-name='Mesh01'
+name='Boundary01'
 numNodes=6
 numElements=3
 nodes = numpy.array([
@@ -238,7 +130,6 @@ nodes = numpy.array([
        1,1,0,
        2,1,0,
        2,0,0])
-#nodes = nodes.reshape(len(nodes),1)
 
 nodeIDs = numpy.array([0,1,2,3,4,5])
 nodeIDs = nodeIDs.reshape(len(nodeIDs),1)
@@ -253,7 +144,7 @@ x = nodes[0::3]
 y = nodes[1::3]
 z = nodes[2::3]
 
-#disp1data=numpy.zeros((numNodes*3))
+disp1data=numpy.zeros((numNodes*3))
 #scale = 0.01
 #disp1data[0::3]=scale*numpy.sin(x*numpy.pi)*numpy.sin(y*numpy.pi)*numpy.sin(z*numpy.pi)
 
@@ -268,23 +159,20 @@ disp1data = disp1data.reshape(len(disp1data),1)
 # DATA HAS TO BE STORED AS A 2D MATRIX (length x 1)
 disp1=fmi2MeshData('displacement',disp1data)
 
-#temp1data = 5*numpy.cos(x*numpy.pi)*numpy.sin(y*numpy.pi)*numpy.sin(z*numpy.pi)
-temp1data = numpy.array([0,1,2,3,4,5])
-temp1data = temp1data.reshape(len(temp1data),1)
-# DATA HAS TO BE STORED AS A 2D MATRIX (length x 1)
-temp1=fmi2MeshData('temperature',temp1data)
+#press1data = 5*numpy.cos(x*numpy.pi)*numpy.sin(y*numpy.pi)*numpy.sin(z*numpy.pi)
+press1data = numpy.array([0,1,2,3,4,5])
+press1data = press1data.reshape(len(press1data),1)
 
-data1=[temp1,disp1]
+# DATA HAS TO BE STORED AS A 2D MATRIX (length x 1)
+press1=fmi2MeshData('pressure',press1data)
+
+data1=[press1,disp1]
 
 meshes[0] = fmi2Mesh(name,numNodes,numElements,nodes,nodeIDs,numNodesPerElem,elems)
 
 
-#mesh2file('clienta_xy',meshes[0])
-
-#data2file('clienta_xy_data',meshes[0],data1)
-
 ## Second Mesh Definition
-name='Mesh02'
+name='Boundary02'
 numNodes=15
 numElements=12
 nodes = numpy.array([
@@ -349,14 +237,14 @@ disp2data = numpy.array([
 disp2data = disp2data.reshape(len(disp2data),1)
 disp2=fmi2MeshData('displacement',disp2data)
        
-temp2data = numpy.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14])
-temp2data = temp2data.reshape(len(temp2data),1)
-temp2=fmi2MeshData('temperature',temp2data)
+press2data = numpy.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14])
+press2data = press2data.reshape(len(press2data),1)
+press2=fmi2MeshData('pressure',press2data)
 
-data2=[temp2,disp2]
+data2=[press2,disp2]
 meshes[0].dataLst = data1
 meshes[1].dataLst = data2
 
 
-ModelVariables.CombinedVariable.meshes = meshes
+ModelVariables.CombinedVariable.Meshes = meshes
 meshes = None

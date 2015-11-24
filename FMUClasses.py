@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 28 16:58:53 2015
+File: FMUVariables.py
+Author: Andrew Brodie
+Created: 30.10.2015
 
-@author: andrew
+Description:
+Describes the new classes that were implemented for FMI 4 FSI.
 """
 
 # ------------------------ Include Packages --------------------

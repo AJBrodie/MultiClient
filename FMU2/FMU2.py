@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 28 16:58:53 2015
 
-@author: andrew
+File: FMU2.py
+Author: Andrew Brodie
+Created: 30.10.2015
+
+Description:
+Defines the FMI API functions for FMU2.
+
+
 """
 
 # ------------------------ Include Packages --------------------
 ## External Packages
 import numpy
 from copy import deepcopy
-## Personal packages
-from SL_io.vtk import *
-from clients import *
 
 fmi2True = 'fmi2True'
 fmi2False = 'fmi2False'
@@ -187,7 +190,7 @@ def fmi2SetString(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fm
 Newly created get/set functions 
 '''
 
-def fmi2GetMeshes(fmi2Component=None, vr=None, nvr=None, value=None):
+def fmi2GetMesh(fmi2Component=None, var=None, nvr=None, value=None):
     '''
     
     '''
@@ -195,10 +198,10 @@ def fmi2GetMeshes(fmi2Component=None, vr=None, nvr=None, value=None):
     
     if fmi2Component is None:
         fmi2Status = 'fmi2Error'
-    elif vr is None:
+    elif var is None:
         fmi2Status = 'fmi2Error'
     elif nvr is None:
-        nvr = len(vr)
+        nvr = len(var)
     elif value is None:
         value = []
         for i in range(0,nvr):
@@ -210,15 +213,18 @@ def fmi2GetMeshes(fmi2Component=None, vr=None, nvr=None, value=None):
             temp.append(fmi2Component.fmi2Mesh)
             
         for i in range(0,nvr):
-            temp[i]=getattr(fmi2Component.ModelVariables.CombinedVariable,vr[i])
-            value[i] = deepcopy(temp[i])            
+            j=0
+            while fmi2Component.ModelVariables.CombinedVariable.Meshes[j].name is not var[i]:
+                j+=1
+                         
+            value[i] = deepcopy(fmi2Component.ModelVariables.CombinedVariable.Meshes[j])
             
     return fmi2Status
 
 
 
     
-def fmi2SetMeshes(fmi2Component=None, vr=None, nvr=None, value=None):
+def fmi2SetMesh(fmi2Component=None, var=None, nvr=None, value=None):
     '''
     
     '''
@@ -230,22 +236,26 @@ def fmi2SetMeshes(fmi2Component=None, vr=None, nvr=None, value=None):
         fmi2Status = 'fmi2Error'
     elif nvr is None:
         nvr = len(value)
-    elif vr is None:
+    elif var is None:
         fmi2Status = 'fmi2Error'
 
             
     if fmi2Status is 'fmi2OK':
         for i in range(0,nvr):
-            setattr(fmi2Component.ModelVariables.CombinedVariable,vr[i],value[i])
+            j=0
+            while fmi2Component.ModelVariables.CombinedVariable.Meshes[j].name is not var[i]:
+                j+=1
+                
+            fmi2Component.ModelVariables.CombinedVariable.Meshes[j] = deepcopy(value[i])
             
     return fmi2Status
 
 
 
     
-def fmi2GetMeshData(fmi2Component=None, meshID=None, vr=None, nvr=None, value=None):
+def fmi2GetMeshData(fmi2Component=None, meshID=None, var=None, nvr=None, value=None):
     '''
-    vr defines a list of strings, the data names to be set
+    var defines a list of strings, the data names to be set
     
     value defines a list of numpy arrays, each array defines the values for the
         corresponding variable name in vr
@@ -255,10 +265,10 @@ def fmi2GetMeshData(fmi2Component=None, meshID=None, vr=None, nvr=None, value=No
     
     if fmi2Component is None:
         fmi2Status = 'fmi2Error'
-    elif vr is None:
+    elif var is None:
         fmi2Status = 'fmi2Error'
     elif nvr is None:
-        nvr = len(vr)
+        nvr = len(var)
     elif value is None:
         value = []
         for i in range(0,nvr):
@@ -266,13 +276,13 @@ def fmi2GetMeshData(fmi2Component=None, meshID=None, vr=None, nvr=None, value=No
     
 
     if fmi2Status is 'fmi2OK':
-        data = fmi2Component.ModelVariables.CombinedVariable.meshes[meshID].dataLst
+        data = fmi2Component.ModelVariables.CombinedVariable.Meshes[meshID].dataLst
         
         #temp = []            
         for i in range(0,nvr):
-            #name = vr[i]
+            #name = var[i]
             for j in range(0,len(data)):
-                if data[j].name is vr[i]:
+                if data[j].name is var[i]:
                     value[i] = deepcopy(data[j].values)
         
 
@@ -281,9 +291,12 @@ def fmi2GetMeshData(fmi2Component=None, meshID=None, vr=None, nvr=None, value=No
 
 
     
-def fmi2SetMeshData(fmi2Component=None, meshID=None, vr=None, nvr=None, value=None):
+def fmi2SetMeshData(fmi2Component=None, meshID=None, var=None, nvr=None, value=None):
     '''
+    var defines a list of strings, the data names to be set
     
+    value defines a list of numpy arrays, each array defines the values for the
+        corresponding variable name in var
     '''
     fmi2Status = 'fmi2OK'    
     
@@ -293,14 +306,14 @@ def fmi2SetMeshData(fmi2Component=None, meshID=None, vr=None, nvr=None, value=No
         fmi2Status = 'fmi2Error'
     elif nvr is None:
         nvr = len(value)
-    elif vr is None:
+    elif var is None:
         fmi2Status = 'fmi2Error'
         
-    data = fmi2Component.ModelVariables.CombinedVariable.meshes[meshID].dataLst
+    data = fmi2Component.ModelVariables.CombinedVariable.Meshes[meshID].dataLst
     if fmi2Status is 'fmi2OK':
         for i in range(0,nvr):
             for j in range(0,len(data)):
-                if data[j].name is vr[i]:
+                if data[j].name is var[i]:
                     data[j].values=value[i]
             
     return fmi2Status
@@ -367,7 +380,7 @@ def fmi2DoStep(fmi2Component, currentCommunicationPoint, communicationStepSize, 
         fmi2Status = 'fmi2Error'
         return fmi2Status
     
-    meshes = fmi2Component.ModelVariables.CombinedVariable.meshes
+    meshes = fmi2Component.ModelVariables.CombinedVariable.Meshes
         
     for mesh in meshes:
         mesh.dataLst[0].values-=5

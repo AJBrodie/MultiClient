@@ -4,9 +4,11 @@
 ## External Packages
 from mpi4py import MPI
 import numpy
+import sys
+sys.path.append('..')
 
 ## Personal packages
-from vtk import *
+from SL_io.vtk import *
 from clients import *
 
 # ----------------------- Client Header -------------------------
@@ -49,9 +51,10 @@ class mesh:
         self.numNodesPerElem=numNodesPerElem
         # Array unknown size (array containing node IDs)
         self.elems=elems
-        
+
+
 # ------------------------ Client Variables ---------------------
-myClientID = 2;
+myClientID = 1
 myTag=myClientID + 50;
 root = 0
 meshes=[]
@@ -61,7 +64,7 @@ for i in (0,2,1):
     meshes.append(mesh())
 
 ## First Mesh Definition
-name='Mesh03'
+name='Mesh01'
 numNodes=6
 numElements=3
 nodes = numpy.array([
@@ -69,100 +72,101 @@ nodes = numpy.array([
        0,1,0,
        1,0,0,
        1,1,0,
-       2,0,0,
-       2,1,0])
+       2,1,0,
+       2,0,0])
 nodeIDs = numpy.array([0,1,2,3,4,5])
-numNodesPerElem = numpy.array([4,3,3])
-elems = numpy.array([
-        0,1,3,2,
-        2,5,4,
-        2,3,5])
+numNodesPerElem = numpy.array([3,3,4])
+elems = numpy.array([0,1,2,1,3,2,2,3,4,5])
 
-meshes[0] = mesh(name,numNodes,numElements,nodes,nodeIDs,numNodesPerElem,elems)
-
-# Data on mesh 1
 disp1=data('displacement',numpy.array([
-        0,0,0,
-        0,1,0,
-        1,0,0,
-        1,1,0,
-        2,0,0,
-        2,1,0]))
+       0,0,0,
+       0,1,0,
+       1,0,0,
+       1,1,0,
+       2,1,0,
+       2,0,0]))
+       
 temp1=data('temperature',numpy.array([0,1,2,3,4,5]))
 
 data1=[temp1,disp1]
-# Write mesh to file
-#mesh2file('clientb_xy',meshes[0])
+
+meshes[0] = mesh(name,numNodes,numElements,nodes,nodeIDs,numNodesPerElem,elems)
+
+
+#mesh2file('clienta_xy',meshes[0])
+
+data2file('clienta_xy_data',meshes[0],data1)
 
 ## Second Mesh Definition
-name='Mesh05'
+name='Mesh02'
 numNodes=15
 numElements=12
 nodes = numpy.array([
         0,0,0,
-        0,0,0.25,
         0,0,0.5,
-        0,0,0.75,
         0,0,1,
+        0.5,0,0,
+        0.5,0,0.5,
+        0.5,0,1,
         1,0,0,
-        1,0,0.25,
         1,0,0.5,
-        1,0,0.75,
         1,0,1,
+        1.5,0,0,
+        1.5,0,0.5,
+        1.5,0,1,
         2,0,0,
-        2,0,0.25,
         2,0,0.5,
-        2,0,0.75,
         2,0,1
        ])
 nodeIDs = numpy.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14])
-numNodesPerElem = numpy.array([3,3,3,3,3,3,3,3,4,4,4,4])
+numNodesPerElem = numpy.array([4,4,3,3,3,3,3,3,3,3,4,4])
 elems = numpy.array([
-        0,6,5,
-        0,1,6,
-        1,2,6,
-        2,7,6,
-        2,8,7,
-        2,3,8,
-        3,4,8,
-        4,9,8,
-        5,6,11,10,
-        6,7,12,11,
-        7,8,13,12,
-        8,9,14,13
+        0,1,4,3,
+        1,2,5,4,
+        3,4,6,
+        4,7,6,
+        4,8,7,
+        4,5,8,
+        6,10,9,
+        6,7,10,
+        7,8,10,
+        8,11,10,
+        9,10,13,12,
+        10,11,14,13
         ])
 
 meshes[1] = mesh(name,numNodes,numElements,nodes,nodeIDs,numNodesPerElem,elems)
 
-# Data on mesh 2
-disp2 = data('displacement',numpy.array([
+disp2=data('displacement',numpy.array([
         0,0,0,
-        0,0,0.25,
         0,0,0.5,
-        0,0,0.75,
         0,0,1,
+        0.5,0,0,
+        0.5,0,0.5,
+        0.5,0,1,
         1,0,0,
-        1,0,0.25,
         1,0,0.5,
-        1,0,0.75,
         1,0,1,
+        1.5,0,0,
+        1.5,0,0.5,
+        1.5,0,1,
         2,0,0,
-        2,0,0.25,
         2,0,0.5,
-        2,0,0.75,
         2,0,1
        ]))
-temp2 = data('temperature',numpy.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]))
+       
+temp2=data('temperature',numpy.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]))
 
 data2=[temp2,disp2]
-# Write mesh to file
-#mesh2file('clientb_xz',meshes[1])
 
-# ------------------------ Client Initialisation ---------------------
+#mesh2file('clienta_xz',meshes[1])
+data2file('clienta_xz_data',meshes[1],data2)
+
+# --------------------------- Initialise Client ----------------------------
 # Connecting to server
 comm = MPI.Comm.Get_parent()
 rank = comm.Get_rank()
-log('Client 2 ...')
+log('Client 1 ...')
 log('server connected...')
 log('Sending Client ID to Server...')
 comm.send(myClientID, dest=0, tag=77)
@@ -171,7 +175,6 @@ comm.send(myClientID, dest=0, tag=77)
 log('--------------------------------------------------------------------')
 log('Initialise Client')
 log('--------------------------------------------------------------------')
-log('')
 log('ClientID is :: %d' % myClientID)
 log('Rank is :: %d' % rank)
 
@@ -182,20 +185,19 @@ log('--------------------------------------------------------------------')
 
 # Syncing communication
 #log('----Syncing Communication')
-#comm.send(myClientID, dest=0, tag=78)
-#comm.recv(source=0, tag=78)
+#comm.send(myClientID, dest=0, tag=77)
+#comm.recv(source=0, tag=77)
 
+# Receiving the data from Server
 data = numpy.arange(10, dtype='d')
-
-### Receiving the data from Server
 comm.Recv(data, source=0, tag=77)
 log('Received data is ::')
 print(data[1], data[2]);
 
-data = data - 10;
-### Sending the data to Server
+data = data + 10;
+# Sending the data to Sever
 comm.Send(data, dest=0, tag=77)
-log('Sent data to server is ::')
+log('Sent data is ::')
 print(data[1], data[2]);
 
 
@@ -203,22 +205,21 @@ print(data[1], data[2]);
 
 
 
-### -----  Send mesh ----- ###
 log('--------------------------------------------------------------------')
 log('Mesh Communication')
 log('--------------------------------------------------------------------')
 
 # Syncing communication
 #log('----Syncing Communication')
-#comm.send(myClientID, dest=0, tag=78)
-#comm.recv(source=0, tag=78)
+#comm.send(myClientID, dest=0, tag=77)
+#comm.recv(source=0, tag=77)
 
-# Send client Meshes
+# Send client Meshes (corresponds fmi2GetMesh)
 comm.send(len(meshes)-1, dest=0, tag=myTag)
 
 for i in range(0,len(meshes)-1,1):
     log('--------------------------------------------------------------------')
-    log('Sending mesh %d of %d' % (i+1,len(meshes)-1))
+    log('-- Sending mesh %d of %d' % (i+1,len(meshes)-1))
     log('--------------------------------------------------------------------')
     sendMesh(meshes[i])
 
@@ -234,33 +235,36 @@ log('--------------------------------------------------------------------')
 
 # Syncing communication
 #log('----Syncing Communication')
-#comm.send(myClientID, dest=0, tag=78)
-#comm.recv(source=0, tag=78)
+#comm.send(myClientID, dest=0, tag=77)
+#comm.recv(source=0, tag=77)
 
 # Mesh 1
 meshInd = 0
 meshTag=myClientID + 50 + meshInd
 log('--Sending data on mesh %d' % (meshInd+1))
-for i in range(0,len(data1),1):    
-    log('----Sending name %d of %d' % (i,len(data1)))
+for i in range(0,len(data1),1):
+
+    log('----Sending name %d of %d' % (i+1,len(data1)))
     comm.send(data1[i].name,dest=0,tag=meshTag)
-    log('----Sending values %d of %d' % (i,len(data1)))
+    log('----Sending values %d of %d' % (i+1,len(data1)))
     comm.send(data1[i].values,dest=0,tag=meshTag)
 
 # Mesh 2
 meshInd = 1
 meshTag=myClientID + 50 + meshInd
 log('--Sending data on mesh %d' % (meshInd+1))
-for i in range(0,len(data1),1):    
-    log('----Sending name %d of %d' % (i,len(data1)))
+for i in range(0,len(data1),1):
+    
+    log('----Sending name %d of %d' % (i+1,len(data1)))
     comm.send(data2[i].name,dest=0,tag=meshTag)
-    log('----Sending values %d of %d' % (i,len(data1)))
+    log('----Sending values %d of %d' % (i+1,len(data1)))
     comm.send(data2[i].values,dest=0,tag=meshTag)
- 
 
 
 
-   
-# ----------------------------- Disconnect from server ------------------ #
-log('disconnecting server...')
+
+
+
+# Disconnect from server
+log('Disconnecting server...')
 comm.Disconnect()

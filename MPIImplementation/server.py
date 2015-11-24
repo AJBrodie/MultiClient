@@ -5,6 +5,9 @@ from mpi4py import MPI
 import numpy
 import time
 
+import sys
+sys.path.append('..')
+
 ## Personal Packages
 from fmi2 import *
 from SL_io.vtk import *

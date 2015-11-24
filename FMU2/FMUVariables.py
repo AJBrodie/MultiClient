@@ -17,110 +17,6 @@ from SL_io.vtk import *
 
            
 # ---------------------- Create Variable Structure -----------------
-'''
-This section could be used to further replace the use of the xml file to define
-variables or whatever other alternative method is deemed suitable for defining 
-the mesh.
-
-ModelExchange = None
-CoSimulation.SourceFiles=['./FMU2.py']
-
-UnitDefinitions=[]
-# infinite list of fmi2Unit
-
-TypeDefinitions=[]
-# infinite list of fmi2SimpleType
-
-LogCategories=[]
-# infinite list of Category
-
-DefaultExperiment = None
-
-VendorAnnotations = []
-# list of type fmi2Annotation
-'''
-'''
-ModelVariables.ScalarVariable = []
-# list of fmi2ScalarVariable
-class fmi2ScalarVariable:
-    
-    Class for describing scalar variables, see initialiser for allowed values
-    
-    def __init__(name=None, valueReference=None, description=None, causality=None, variability=None, initial=None, canHandleMultipleSetPerTimeInstant=None,fmi2Type=None,annotations=None):
-        
-        if name is None:
-            self.name = 'NA'
-        else:
-            self.name = name
-            
-        if valueReference is None:
-            self.valueReference = 0
-        else:
-            self.valueReference = valueReference
-            
-        if description is None:
-            self.description = ''
-        else:
-            self.description = description
-        
-        if causality is None:
-            
-            Valid values:
-            - parameter
-            - calculatedParameter
-            - input/output
-            - local
-            - independent
-            
-            self.causality = ''
-        else:
-            self.causality = causality
-        
-        if variability is None:
-            self.variability = ''
-            
-            Valid values:
-            - constant
-            - fixed
-            - tunable
-            - discrete
-            - continuous
-            
-        else:
-            self.variability = variability
-            
-        if initial is None:
-            self.initial = ''
-            
-            Valid values:
-            - exact
-            - approx
-            - calculated
-            
-        else:
-            self.initial = initial
-            
-        if canHandleMultipleSetPerTimeInstant is None:
-            self.canHandleMultipleSetPerTimeInstant = fmi2False
-        else:
-            self.canHandleMultipleSetPerTimeInstant = canHandleMultipleSetPerTimeInstant
-            
-        if fmi2Type is None:
-            self.fmi2Type = ''
-        else:
-            self.fmi2Type = fmi2Type
-            
-        if annotations is None:
-            self.annotations = []
-        else:
-            self.annotations = annotations
-
-ModelVariables.VectorVariable = []
-# list of fmi2VectorVariable
-
-ModelVariables.CombinedVariable = []
-# list of fmi2CombinedVariable
-'''
 class ModelVariables():
     def __init__(self):
         self.ScalarVariable = ScalarVariable()
@@ -228,7 +124,7 @@ for i in range(0,nMeshes):
     meshes.append(fmi2Mesh())
 
 ## First Mesh Definition
-name='Mesh03'
+name='Boundary01'
 numNodes=6
 numElements=3
 nodes = numpy.array([
@@ -238,7 +134,7 @@ nodes = numpy.array([
        1,1,0,
        2,0,0,
        2,1,0])
-#nodes = nodes.reshape(len(nodes),1)
+       
 nodeIDs = numpy.array([0,1,2,3,4,5])
 numNodesPerElem = numpy.array([4,3,3])
 elems = numpy.array([
@@ -261,12 +157,12 @@ disp1=fmi2MeshData('displacement',disp1data)
 
 temp1data = numpy.array([0,1,2,3,4,5])
 temp1data = temp1data.reshape(len(temp1data),1)
-temp1=fmi2MeshData('temperature',temp1data)
+temp1=fmi2MeshData('pressure',temp1data)
 
 data1=[temp1,disp1]
 
 ## Second Mesh Definition
-name='Mesh05'
+name='Boundary02'
 numNodes=15
 numElements=12
 nodes = numpy.array([
@@ -328,11 +224,11 @@ disp2 = fmi2MeshData('displacement',disp2data)
 
 temp2data = numpy.array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14])
 temp2data = temp2data.reshape(len(temp2data),1)
-temp2 = fmi2MeshData('temperature',temp2data)
+temp2 = fmi2MeshData('pressure',temp2data)
 
 data2=[temp2,disp2]
 meshes[0].dataLst = data1
 meshes[1].dataLst = data2
 
-ModelVariables.CombinedVariable.meshes = meshes
+ModelVariables.CombinedVariable.Meshes = meshes
 meshes = None
